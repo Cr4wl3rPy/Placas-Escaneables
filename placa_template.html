@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Validación de Placa</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+      background: #fff;
+      color: #333;
+    }
+
+    /* Cabecera verde */
+    .header {
+      background: #6aaa2a;
+      padding: 22px 24px 18px;
+    }
+    .header p {
+      font-style: italic;
+      font-weight: 700;
+      color: #fff;
+      font-size: 17px;
+      letter-spacing: 0.5px;
+    }
+
+    /* Línea naranja */
+    .stripe {
+      height: 5px;
+      background: #e07b00;
+    }
+
+    /* Cuerpo */
+    .body {
+      padding: 28px 24px 40px;
+    }
+
+    .subtitle {
+      color: #e07b00;
+      font-weight: 700;
+      font-size: 15px;
+      margin-bottom: 4px;
+    }
+
+    .title {
+      font-size: 30px;
+      font-weight: 400;
+      color: #222;
+      margin-bottom: 28px;
+      line-height: 1.2;
+    }
+
+    /* Tabla de datos */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .data-table tr td {
+      padding: 14px 16px;
+      font-size: 15px;
+      border-bottom: 1px solid #ddd;
+      vertical-align: top;
+    }
+
+    .data-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    /* Columna izquierda (label) — fondo gris */
+    .data-table td:first-child {
+      background: #f0f0f0;
+      color: #444;
+      font-weight: 400;
+      width: 38%;
+    }
+
+    /* Columna derecha (valor) */
+    .data-table td:last-child {
+      background: #fff;
+      color: #555;
+      font-weight: 400;
+    }
+
+    /* Logo pequeño abajo derecha */
+    .footer-logo {
+      text-align: right;
+      padding: 12px 24px;
+      font-size: 11px;
+      color: #aaa;
+    }
+
+    /* Estado de carga */
+    .loading {
+      text-align: center;
+      padding: 80px 24px;
+      color: #888;
+      font-size: 15px;
+    }
+    .spinner {
+      width: 34px; height: 34px;
+      border: 3px solid #e0e0e0;
+      border-top-color: #6aaa2a;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 14px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Error */
+    .error { text-align: center; padding: 80px 24px; }
+    .error h3 { color: #c62828; margin-bottom: 8px; font-size: 18px; }
+    .error p  { color: #888; font-size: 14px; }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <p>PLACA PROVISIONAL</p>
+  </div>
+  <div class="stripe"></div>
+
+  <div id="app">
+    <div class="loading">
+      <div class="spinner"></div>
+      Consultando...
+    </div>
+  </div>
+
+<script>
+/* ================================================================
+   BASE DE DATOS LOCAL DE EJEMPLO
+   En producción reemplaza esto con un fetch() a tu API/backend:
+
+   const res = await fetch(`/api/placas/${id}`);
+   const v   = await res.json();
+================================================================ */
+const DB = {
+  "PP716083": {
+    codigo:           "vn18cacg",
+    placa:            "PP716083",
+    tipo_vehiculo:    "JEEP",
+    marca:            "HONDA",
+    modelo:           "CR-V",
+    color:            "GRIS",
+    año:              "2023",
+    chasis:           "7FARS5H54PE009055",
+    fecha_expiracion: "16/05/2026"
+  },
+  "PP000001": {
+    codigo:           "ab12xyzw",
+    placa:            "PP000001",
+    tipo_vehiculo:    "SEDAN",
+    marca:            "TOYOTA",
+    modelo:           "COROLLA",
+    color:            "BLANCO",
+    año:              "2022",
+    chasis:           "1HGCM82633A004352",
+    fecha_expiracion: "30/09/2026"
+  }
+};
+
+function getParam(key) {
+  return new URLSearchParams(window.location.search).get(key);
+}
+
+function render(v) {
+  const rows = [
+    ["Código",            v.codigo],
+    ["Placa",             v.placa],
+    ["Tipo de Vehículo",  v.tipo_vehiculo],
+    ["Marca",             v.marca],
+    ["Modelo",            v.modelo],
+    ["Color",             v.color],
+    ["Año",               v.año],
+    ["Chasis",            v.chasis],
+    ["Fecha Expiración",  v.fecha_expiracion],
+  ];
+
+  const filas = rows.map(([label, val]) => `
+    <tr>
+      <td>${label}</td>
+      <td>${val || "—"}</td>
+    </tr>
+  `).join("");
+
+  document.getElementById("app").innerHTML = `
+    <div class="body">
+      <p class="subtitle">Sistema Datamatrix</p>
+      <h1 class="title">Validación de Documentos</h1>
+      <table class="data-table">
+        <tbody>${filas}</tbody>
+      </table>
+    </div>
+    <div class="footer-logo">🔒 dgii.gov.do</div>
+  `;
+}
+
+function renderError(msg) {
+  document.getElementById("app").innerHTML = `
+    <div class="error">
+      <h3>No encontrado</h3>
+      <p>${msg}</p>
+    </div>
+  `;
+}
+
+(function init() {
+  const id = getParam("id");
+  if (!id) { renderError("No se proporcionó número de placa."); return; }
+
+  /* -- Para API real, descomenta esto: --
+  fetch(`/api/placas/${encodeURIComponent(id)}`)
+    .then(r => r.ok ? r.json() : Promise.reject())
+    .then(render)
+    .catch(() => renderError(`Placa <strong>${id}</strong> no encontrada.`));
+  -------------------------------------- */
+
+  setTimeout(() => {
+    const v = DB[id.toUpperCase()];
+    v ? render(v) : renderError(`Placa <strong>${id}</strong> no encontrada.`);
+  }, 500);
+})();
+</script>
+</body>
+</html>

@@ -221,10 +221,20 @@ function renderError(msg) {
     .catch(() => renderError(`Placa <strong>${id}</strong> no encontrada.`));
   -------------------------------------- */
 
-  setTimeout(() => {
-    const v = DB[id.toUpperCase()];
-    v ? render(v) : renderError(`Placa <strong>${id}</strong> no encontrada.`);
-  }, 500);
+  fetch(`http://127.0.0.1:5000/api/placas/${id}`)
+    .then(r => r.ok ? r.json() : Promise.reject())
+    .then(v => render({
+        codigo:           v.no_placa,
+        placa:            v.no_placa,
+        tipo_vehiculo:    v.tipo_vehiculo,
+        marca:            v.marca,
+        modelo:           v.modelo,
+        color:            v.color,
+        año:              v.anio,
+        chasis:           v.chasis,
+        fecha_expiracion: v.fecha_expiracion
+    }))
+    .catch(() => renderError(`Placa <strong>${id}</strong> no encontrada.`));
 })();
 </script>
 </body>

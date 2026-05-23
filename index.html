@@ -221,7 +221,7 @@ function renderError(msg) {
     .catch(() => renderError(`Placa <strong>${id}</strong> no encontrada.`));
   -------------------------------------- */
 
-  fetch(`http://127.0.0.1:5000/api/placas/${id}`)
+  fetch(`https://placas-system-production.up.railway.app/api/placas/${id}`)
     .then(r => r.ok ? r.json() : Promise.reject())
     .then(v => render({
         codigo:           v.no_placa,
